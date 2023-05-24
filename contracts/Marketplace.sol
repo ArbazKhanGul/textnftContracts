@@ -58,7 +58,8 @@ contract NFTMarket is ReentrancyGuard {
         address  creator,
         address owner,
         uint256 creatorProfit,
-        uint256 sellerProfit
+        uint256 sellerProfit,
+        uint256 sellingPrice
     );
 
 
@@ -217,7 +218,8 @@ contract NFTMarket is ReentrancyGuard {
                 idMarketItem[itemId].creator,
                 msg.sender,
                 creator_profit,
-                previous_token_price + seller_profit
+                previous_token_price + seller_profit,
+                price
             );
 
             // emit MarketItemCreated(
