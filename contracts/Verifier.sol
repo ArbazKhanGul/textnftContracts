@@ -11,23 +11,21 @@ contract Verifier {
 
 
 
-    function verify( address _signer,uint _message, uint _nonce,bytes memory signature) internal view returns (bool) {
-    
+    function verify( address _signer,uint _message, uint _nonce,uint _price,address _copyrightOwner,bytes calldata signature) internal view returns (bool) {
         require(uniqueNonce[_nonce]==false,"Nonce already use");
-  
-
-        bytes32 messageHash = getMessageHash(_message, _nonce);
-
+        bytes32 messageHash = getMessageHash(_message, _nonce,_price,_copyrightOwner);
+        //   console.logBytes32(messageHash);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-
-        return  recoverSigner(ethSignedMessageHash,signature)== _signer;
+        //   console.logBytes32(ethSignedMessageHash);
+        return  recoverSigner(ethSignedMessageHash,signature)==_signer;
     }
 
 
 
 
-    function getMessageHash( uint _message,    uint _nonce) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(Strings.toString(_message),"_", Strings.toString(_nonce)));
+    function getMessageHash( uint _message,uint _nonce,uint _price,address _copyrightOwner) internal pure returns (bytes32) {
+        // return keccak256(abi.encodePacked(Strings.toString(_message),"_", Strings.toString(_nonce),"_",Strings.toString(_price),"_",_copyrightOwner));
+           return keccak256(abi.encodePacked(_message,_nonce,_copyrightOwner,_price));
     }
 
 

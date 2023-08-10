@@ -70,13 +70,17 @@ contract NFTMarket is ReentrancyGuard {
 
 
 
+  modifier onlyOwner {
+      require(msg.sender == owner,"Not an owner");
+      _;
+   }
+
 /// @notice function to get listingprice
     function getNFTContractAddress() public view returns (address){
         return nftContractAddress;
     }
 
-    function setNFTContractAddress(address nftaddress) public  {
-         require(msg.sender==owner,"Not an owner");
+    function setNFTContractAddress(address nftaddress) public onlyOwner {
              nftContractAddress =nftaddress;
     }
 
@@ -89,6 +93,9 @@ contract NFTMarket is ReentrancyGuard {
     return address(this).balance;
    }
 
+   function transferFee() public onlyOwner{
+       owner.transfer(address(this).balance);
+   }
 
     /// @notice function to create market item
 

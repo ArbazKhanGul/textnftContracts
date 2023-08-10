@@ -16,7 +16,7 @@ contract NFT is ERC721URIStorage,Verifier {
     address immutable contractAddress;
 
 
-    event Creation(address indexed owner_address,uint indexed tokenId,string tokenURI,bool copyright);
+    event Creation(address indexed owner_address,uint indexed tokenId,string tokenURI,bool copyright,uint copyrightprice,address copyrightOwner);
     event ApprovalMarketplace(uint tokenId);
 
 
@@ -26,7 +26,7 @@ contract NFT is ERC721URIStorage,Verifier {
     }
 
 
-    function createToken(string calldata tokenURI,bool copyrightStatus,uint tokenIdCopyrights,uint nonce,bytes calldata signature) public payable  {
+    function createToken(string calldata tokenURI,bool copyrightStatus,uint tokenIdCopyrights,uint nonce,uint copyrightPrice,address copyrightOwner,bytes calldata signature) public payable  {
         //set a new token id for the token to be minted
 
            _tokenIds.increment();
@@ -34,22 +34,27 @@ contract NFT is ERC721URIStorage,Verifier {
 
           if(copyrightStatus){
 
-            require(verify(owner,tokenIdCopyrights,nonce,signature),"Invalid sign message");
+            require(verify(owner,tokenIdCopyrights,nonce,copyrightPrice,copyrightOwner,signature),"Invalid sign message");
 
             uniqueNonce[nonce] =true;
             _copyright[newItemId]=tokenIdCopyrights;
-          }
+            _creator[newItemId] = _creator[tokenIdCopyrights];
+
+            if(copyrightPrice > 0){
+              payable(copyrightOwner).transfer(copyrightPrice);
+            }
+
+           }
           else{
-            _copyright[newItemId]=0;
+            _creator[newItemId] = msg.sender;
           }
 
 
         _mint(msg.sender, newItemId); //mint the token
         _setTokenURI(newItemId, tokenURI); //generate the URI
-        _creator[newItemId] = msg.sender;
         setApprovalForAll(contractAddress,true); //grant transaction permission to marketplace
         _totalSupply.increment();
-        emit Creation(msg.sender,newItemId,tokenURI,copyrightStatus);
+        emit Creation(msg.sender,newItemId,tokenURI,copyrightStatus,copyrightPrice,copyrightOwner);
 
     }
 
@@ -69,7 +74,7 @@ contract NFT is ERC721URIStorage,Verifier {
         return _totalSupply.current();
     }
 
-    modifier onlyOwner {
+  modifier onlyOwner {
       require(msg.sender == owner,"Not an owner");
       _;
    }
