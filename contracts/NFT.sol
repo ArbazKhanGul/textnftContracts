@@ -26,23 +26,27 @@ contract NFT is ERC721URIStorage,Verifier {
     }
 
 
-    function createToken(string calldata tokenURI,bool copyrightStatus,uint tokenIdCopyrights,uint nonce,uint copyrightPrice,address copyrightOwner,bytes calldata signature) public payable  {
+    function createToken(string calldata tokenURI,bool copyrightStatus,uint tokenIdCopyrights,uint nonce,uint copyrightPrice,bytes calldata signature) public payable  {
         //set a new token id for the token to be minted
 
-           _tokenIds.increment();
+          _tokenIds.increment();
            uint256 newItemId = _tokenIds.current();
+           address tokenOwner;
+
 
           if(copyrightStatus){
 
-            require(verify(owner,tokenIdCopyrights,nonce,copyrightPrice,copyrightOwner,signature),"Invalid sign message");
-
+            tokenOwner=ownerOf(tokenIdCopyrights);
+            if(msg.sender!=tokenOwner){
+            require(verify(tokenOwner,tokenIdCopyrights,nonce,copyrightPrice,msg.sender,signature),"Invalid sign message");
             uniqueNonce[nonce] =true;
-            _copyright[newItemId]=tokenIdCopyrights;
-            _creator[newItemId] = _creator[tokenIdCopyrights];
-
             if(copyrightPrice > 0){
-              payable(copyrightOwner).transfer(copyrightPrice);
+              payable(tokenOwner).transfer(copyrightPrice);
             }
+            }
+
+            _copyright[newItemId]=tokenIdCopyrights;
+            _creator[newItemId] = msg.sender;
 
            }
           else{
@@ -54,7 +58,7 @@ contract NFT is ERC721URIStorage,Verifier {
         _setTokenURI(newItemId, tokenURI); //generate the URI
         setApprovalForAll(contractAddress,true); //grant transaction permission to marketplace
         _totalSupply.increment();
-        emit Creation(msg.sender,newItemId,tokenURI,copyrightStatus,copyrightPrice,copyrightOwner);
+        emit Creation(msg.sender,newItemId,tokenURI,copyrightStatus,copyrightPrice,tokenOwner);
 
     }
 
@@ -66,6 +70,8 @@ contract NFT is ERC721URIStorage,Verifier {
 
 
     function copyOf(uint tokenId) public view returns(uint res){
+        address tokenAddress = _creator[tokenId];
+        require(tokenAddress != address(0), "ERC721: invalid token ID");
         res = _copyright[tokenId];
      }
 

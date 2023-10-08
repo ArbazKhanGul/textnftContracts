@@ -119,8 +119,8 @@ contract NFTMarket is ReentrancyGuard {
              "available"
         );
 
-               //transfer ownership of the nft to the contract itself
-               NFT(nftContractAddress).transferFrom(msg.sender, address(this), tokenId);
+        //transfer ownership of the nft to the contract itself
+        NFT(nftContractAddress).transferFrom(msg.sender, address(this), tokenId);
 
             //log this transaction
         emit MarketItemCreated(
