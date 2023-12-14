@@ -29,7 +29,7 @@ contract NFT is ERC721URIStorage,Verifier {
     function createToken(string calldata tokenURI,bool copyrightStatus,uint tokenIdCopyrights,uint nonce,uint copyrightPrice,bytes calldata signature) public payable  {
         //set a new token id for the token to be minted
 
-          _tokenIds.increment();
+           _tokenIds.increment();
            uint256 newItemId = _tokenIds.current();
            address tokenOwner;
 
@@ -37,6 +37,7 @@ contract NFT is ERC721URIStorage,Verifier {
           if(copyrightStatus){
 
             tokenOwner=ownerOf(tokenIdCopyrights);
+
             if(msg.sender!=tokenOwner){
             require(verify(tokenOwner,tokenIdCopyrights,nonce,copyrightPrice,msg.sender,signature),"Invalid sign message");
             uniqueNonce[nonce] =true;
